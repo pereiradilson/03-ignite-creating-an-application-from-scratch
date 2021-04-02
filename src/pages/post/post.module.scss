@@ -43,6 +43,7 @@
 
   .postContent {
     margin-top: 3.75rem;
+    text-align: justify;
 
     h2 {
       font-weight: 700;
@@ -51,6 +52,37 @@
 
     p, ul {
       margin: 1.5rem 0;
+    }
+  }
+}
+
+.footer {
+  margin-top: 3.75rem;
+  padding-top: 3rem;
+  border-top: 1px solid rgba(215, 215, 215, 0.1);
+
+  .previousAndNextPosts {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 4rem;
+
+    div + div {
+      text-align: right;
+    }
+
+    p {
+      color: var(--heading);
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+    }
+
+    a {
+      background: transparent;
+      border: 0;
+      color: var(--highlight);
+      font-size: 1rem;
+      font-weight: 600;
     }
   }
 }
