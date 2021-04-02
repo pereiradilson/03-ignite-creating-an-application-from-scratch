@@ -37,12 +37,14 @@ interface PostProps {
   post: Post;
   previousPost: Post | null;
   nextPost: Post | null;
+  preview: boolean;
 }
 
 export default function Post({
   post,
   previousPost,
   nextPost,
+  preview,
 }: PostProps): JSX.Element {
   const router = useRouter();
 
@@ -132,6 +134,14 @@ export default function Post({
 
           <Comment slug={post.uid} />
         </div>
+
+        {preview && (
+          <aside>
+            <Link href="/api/exit-preview">
+              <a>Sair do modo Preview</a>
+            </Link>
+          </aside>
+        )}
       </main>
     </>
   );
@@ -160,18 +170,25 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
 
   const { slug } = params;
 
-  const response = await prismic.getByUID('posts', String(slug), {});
+  const response = await prismic.getByUID('posts', String(slug), {
+    ref: previewData?.ref ?? null,
+  });
 
   const previousPost = (
     await prismic.query([Prismic.predicates.at('document.type', 'posts')], {
       pageSize: 1,
       after: `${response.id}`,
       orderings: '[document.first_publication_date desc]',
+      ref: previewData?.ref ?? null,
     })
   ).results[0];
 
@@ -180,6 +197,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       pageSize: 1,
       after: `${response.id}`,
       orderings: '[document.first_publication_date]',
+      ref: previewData?.ref ?? null,
     })
   ).results[0];
 
@@ -188,6 +206,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       post: response,
       previousPost: previousPost || null,
       nextPost: nextPost || null,
+      preview,
     },
     redirect: 60 * 30, // 30 minutes
   };
