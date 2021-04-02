@@ -1,8 +1,13 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
+import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 
+import { useRouter } from 'next/router';
+import Header from '../../components/Header';
 import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
@@ -30,11 +35,19 @@ interface PostProps {
 }
 
 export default function Post({ post }: PostProps): JSX.Element {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <div>Carregando...</div>;
+  }
+
   return (
     <>
       <Head>
         <title>{post.data.title} | spacetraveling</title>
       </Head>
+
+      <Header />
 
       <div className={styles.banner}>
         <img src={post.data.banner.url} alt="" />
@@ -46,7 +59,11 @@ export default function Post({ post }: PostProps): JSX.Element {
           <div className={styles.info}>
             <div>
               <FiCalendar color="#BBBBBB" />
-              <span>{post.first_publication_date}</span>
+              <span>
+                {format(new Date(post.first_publication_date), 'dd MMM yyyy', {
+                  locale: ptBR,
+                })}
+              </span>
             </div>
             <div>
               <FiUser color="#BBBBBB" />
@@ -76,11 +93,25 @@ export default function Post({ post }: PostProps): JSX.Element {
 }
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  // const prismic = getPrismicClient();
-  // const posts = await prismic.query(TODO);
+  const prismic = getPrismicClient();
+  const posts = await prismic.query(
+    [Prismic.predicates.at('document.type', 'posts')],
+    {
+      pageSize: 3,
+    }
+  );
+
+  const postUids = posts.results.map(post => {
+    return {
+      params: {
+        slug: String(post.uid),
+      },
+    };
+  });
+
   return {
-    paths: [],
-    fallback: 'blocking',
+    paths: postUids,
+    fallback: true,
   };
 };
 
@@ -91,27 +122,10 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const response = await prismic.getByUID('posts', String(slug), {});
 
-  const post = {
-    first_publication_date: new Date(response.first_publication_date)
-      .toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      })
-      .replaceAll('de', ''),
-    data: {
-      title: response.data.title,
-      banner: {
-        url: response.data.banner.url,
-      },
-      author: response.data.author,
-      content: response.data.content,
-    },
-  };
-
   return {
     props: {
-      post,
+      post: response,
     },
+    redirect: 60 * 30, // 30 minutes
   };
 };
