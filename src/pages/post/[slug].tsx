@@ -37,6 +37,14 @@ interface PostProps {
 export default function Post({ post }: PostProps): JSX.Element {
   const router = useRouter();
 
+  const readTime = post.data.content.reduce((acc, content) => {
+    const contentText = RichText.asText(content.body);
+    const count = contentText.split(/\s+/);
+    const calc = Math.ceil(count.length / 200);
+
+    return acc + calc;
+  }, 0);
+
   if (router.isFallback) {
     return <div>Carregando...</div>;
   }
@@ -53,7 +61,7 @@ export default function Post({ post }: PostProps): JSX.Element {
         <img src={post.data.banner.url} alt="" />
       </div>
 
-      <main className={styles.container}>
+      <main className={commonStyles.container}>
         <article className={styles.post}>
           <h1>{post.data.title}</h1>
           <div className={styles.info}>
@@ -71,7 +79,7 @@ export default function Post({ post }: PostProps): JSX.Element {
             </div>
             <div>
               <FiClock color="#BBBBBB" />
-              <span>4 min</span>
+              <span>{readTime} min</span>
             </div>
           </div>
           <div className={styles.postContent}>
