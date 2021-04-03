@@ -49,8 +49,6 @@ export default function Post({
 }: PostProps): JSX.Element {
   const router = useRouter();
 
-  console.log('DATA', post);
-
   const readTime = post.data.content.reduce((acc, content) => {
     const contentText = RichText.asText(content.body);
     const count = contentText.split(/\s+/);
