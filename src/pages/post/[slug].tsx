@@ -49,6 +49,8 @@ export default function Post({
 }: PostProps): JSX.Element {
   const router = useRouter();
 
+  console.log('DATA', post);
+
   const readTime = post.data.content.reduce((acc, content) => {
     const contentText = RichText.asText(content.body);
     const count = contentText.split(/\s+/);
@@ -99,7 +101,7 @@ export default function Post({
             <div className={styles.edited}>
               <span>
                 {format(
-                  new Date(post.first_publication_date),
+                  new Date(post.last_publication_date),
                   "'* editado em' dd MMM yyyy', às' HH:mm",
                   {
                     locale: ptBR,
@@ -127,7 +129,11 @@ export default function Post({
           <div className={styles.previousAndNextPosts}>
             {previousPost ? (
               <div>
-                <p>{previousPost.data.title}</p>
+                <p>
+                  {previousPost.data.title.length > 30
+                    ? `${previousPost.data.title.substring(0, 30)}...`
+                    : previousPost.data.title}
+                </p>
                 <Link href={`/post/${previousPost.uid}`}>
                   <a>Post anterior</a>
                 </Link>
@@ -138,7 +144,11 @@ export default function Post({
 
             {nextPost ? (
               <div>
-                <p>{nextPost.data.title}</p>
+                <p>
+                  {nextPost.data.title.length > 30
+                    ? `${nextPost.data.title.substring(0, 30)}...`
+                    : nextPost.data.title}
+                </p>
                 <Link href={`/post/${nextPost.uid}`}>
                   <a>Próximo post</a>
                 </Link>

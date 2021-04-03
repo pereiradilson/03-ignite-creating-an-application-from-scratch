@@ -120,7 +120,7 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({
   const response = await prismic.query(
     [Prismic.predicates.at('document.type', 'posts')],
     {
-      pageSize: 3,
+      pageSize: 2,
       orderings: '[document.first_publication_date desc]',
       ref: previewData?.ref ?? null,
     }
