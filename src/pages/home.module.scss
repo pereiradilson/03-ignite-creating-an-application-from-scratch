@@ -1,4 +1,6 @@
 .posts {
+  margin-bottom: 4rem;
+
   a {
     display: block;
 
@@ -51,7 +53,7 @@
 .morePosts {
   background: transparent;
   border: 0;
-  margin: 4rem 0;
+  margin-bottom: 4rem;
   color: var(--highlight);
   font-size: 1.125rem;
   font-weight: 600;

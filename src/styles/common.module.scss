@@ -1,4 +1,22 @@
 .container {
-  max-width: 1120px;
+  max-width: 720px;
   margin: 0 auto;
+}
+
+.container aside {
+  margin: 4rem 0;
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--heading);
+    color: var(--background);
+    border-radius: 0.25rem;
+
+    padding: 1.2rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
 }

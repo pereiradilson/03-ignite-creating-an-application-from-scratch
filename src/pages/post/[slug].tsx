@@ -1,5 +1,6 @@
 import { GetStaticPaths, GetStaticProps } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 import Prismic from '@prismicio/client';
 import { RichText } from 'prismic-dom';
 import { FiCalendar, FiUser, FiClock } from 'react-icons/fi';
@@ -12,9 +13,12 @@ import { getPrismicClient } from '../../services/prismic';
 
 import commonStyles from '../../styles/common.module.scss';
 import styles from './post.module.scss';
+import Comment from '../../components/Comment';
 
 interface Post {
+  uid: string;
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -32,9 +36,17 @@ interface Post {
 
 interface PostProps {
   post: Post;
+  previousPost: Post | null;
+  nextPost: Post | null;
+  preview: boolean;
 }
 
-export default function Post({ post }: PostProps): JSX.Element {
+export default function Post({
+  post,
+  previousPost,
+  nextPost,
+  preview,
+}: PostProps): JSX.Element {
   const router = useRouter();
 
   const readTime = post.data.content.reduce((acc, content) => {
@@ -82,6 +94,21 @@ export default function Post({ post }: PostProps): JSX.Element {
               <span>{readTime} min</span>
             </div>
           </div>
+
+          {post.last_publication_date && (
+            <div className={styles.edited}>
+              <span>
+                {format(
+                  new Date(post.first_publication_date),
+                  "'* editado em' dd MMM yyyy', às' HH:mm",
+                  {
+                    locale: ptBR,
+                  }
+                )}
+              </span>
+            </div>
+          )}
+
           <div className={styles.postContent}>
             {post.data.content.map(content => (
               <div key={content.heading}>
@@ -95,6 +122,42 @@ export default function Post({ post }: PostProps): JSX.Element {
             ))}
           </div>
         </article>
+
+        <div className={styles.footer}>
+          <div className={styles.previousAndNextPosts}>
+            {previousPost ? (
+              <div>
+                <p>{previousPost.data.title}</p>
+                <Link href={`/post/${previousPost.uid}`}>
+                  <a>Post anterior</a>
+                </Link>
+              </div>
+            ) : (
+              <div />
+            )}
+
+            {nextPost ? (
+              <div>
+                <p>{nextPost.data.title}</p>
+                <Link href={`/post/${nextPost.uid}`}>
+                  <a>Próximo post</a>
+                </Link>
+              </div>
+            ) : (
+              <div />
+            )}
+          </div>
+
+          <Comment slug={post.uid} />
+        </div>
+
+        {preview && (
+          <aside>
+            <Link href="/api/exit-preview">
+              <a>Sair do modo Preview</a>
+            </Link>
+          </aside>
+        )}
       </main>
     </>
   );
@@ -123,16 +186,43 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  params,
+  preview = false,
+  previewData,
+}) => {
   const prismic = getPrismicClient();
 
   const { slug } = params;
 
-  const response = await prismic.getByUID('posts', String(slug), {});
+  const response = await prismic.getByUID('posts', String(slug), {
+    ref: previewData?.ref ?? null,
+  });
+
+  const previousPost = (
+    await prismic.query([Prismic.predicates.at('document.type', 'posts')], {
+      pageSize: 1,
+      after: `${response.id}`,
+      orderings: '[document.first_publication_date desc]',
+      ref: previewData?.ref ?? null,
+    })
+  ).results[0];
+
+  const nextPost = (
+    await prismic.query(Prismic.predicates.at('document.type', 'posts'), {
+      pageSize: 1,
+      after: `${response.id}`,
+      orderings: '[document.first_publication_date]',
+      ref: previewData?.ref ?? null,
+    })
+  ).results[0];
 
   return {
     props: {
       post: response,
+      previousPost: previousPost || null,
+      nextPost: nextPost || null,
+      preview,
     },
     redirect: 60 * 30, // 30 minutes
   };
