@@ -89,7 +89,7 @@ export default function Home({
           ))}
         </div>
 
-        {postsPagination.next_page && (
+        {nextPage && (
           <button
             type="button"
             className={styles.morePosts}
@@ -117,8 +117,6 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({
 }) => {
   const prismic = getPrismicClient();
 
-  console.log('DATA', previewData?.ref);
-
   const response = await prismic.query(
     [Prismic.predicates.at('document.type', 'posts')],
     {
@@ -127,8 +125,6 @@ export const getStaticProps: GetStaticProps<HomeProps> = async ({
       ref: previewData?.ref ?? null,
     }
   );
-
-  // console.log('RESPONSE', JSON.stringify(response, null, 2));
 
   const posts = response.results.map(post => {
     return {

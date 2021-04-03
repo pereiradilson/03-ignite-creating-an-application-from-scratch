@@ -41,6 +41,14 @@
     }
   }
 
+  .edited {
+    margin: 1rem 0;
+    span {
+      font-size: 0.875rem;
+      color: var(--info);
+    }
+  }
+
   .postContent {
     margin-top: 3.75rem;
     text-align: justify;
@@ -57,7 +65,7 @@
 }
 
 .footer {
-  margin-top: 3.75rem;
+  margin: 3.75rem 0;
   padding-top: 3rem;
   border-top: 1px solid rgba(215, 215, 215, 0.1);
 

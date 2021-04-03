@@ -18,6 +18,7 @@ import Comment from '../../components/Comment';
 interface Post {
   uid: string;
   first_publication_date: string | null;
+  last_publication_date: string | null;
   data: {
     title: string;
     banner: {
@@ -93,6 +94,21 @@ export default function Post({
               <span>{readTime} min</span>
             </div>
           </div>
+
+          {post.last_publication_date && (
+            <div className={styles.edited}>
+              <span>
+                {format(
+                  new Date(post.first_publication_date),
+                  "'* editado em' dd MMM yyyy', às' HH:mm",
+                  {
+                    locale: ptBR,
+                  }
+                )}
+              </span>
+            </div>
+          )}
+
           <div className={styles.postContent}>
             {post.data.content.map(content => (
               <div key={content.heading}>
